@@ -1,0 +1,10 @@
+# 构建产物
+bms_query
+bin/
+
+# 运行时数据 (CSV 日志)
+logs/
+
+# doc 只保留协议 PDF
+doc/*
+!doc/485UART通用协议 V4.pdf
