@@ -180,9 +180,9 @@ int csvlog_open_monitor(const char *kind, FILE **out) {
     /* 必写表头 (新文件) */
     if (strcmp(kind, "basic") == 0) {
         fputs("timestamp,total_voltage_v,current_a,"
-              "remaining_capacity_mah,production_date,ntc_count,"
-              "ntc1_c,ntc2_c,ntc3_c,ntc4_c,"
-              "protection_status,triggered_protection\n", f);
+              "remaining_capacity_mah,"
+              "ntc1_c,ntc2_c,ntc3_c,"
+              "protection_status,capacity_percent\n", f);
     } else if (strcmp(kind, "cells") == 0) {
         fputs("timestamp,cell_count,cell_min_mv,"
               "cell_max_mv,cell_spread_mv,cell_avg_mv\n", f);
@@ -200,34 +200,36 @@ void csvlog_append_monitor_basic(FILE *f,
     double total_voltage_v,
     double current_a,
     uint32_t remaining_mah,
-    const char *prod_date,
+    uint32_t nominal_capacity_mah,
     uint8_t ntc_count,
     const double *ntc_temp_c,
     uint16_t protection_bits,
-    const char *triggered_prots,
     time_t ts)
 {
     if (!f) return;
 
+    double cap_pct = (nominal_capacity_mah > 0)
+        ? (double) remaining_mah / nominal_capacity_mah *100.0
+        : 0.0;
+
     print_iso_time(f, ts);
-    fprintf(f, ",%.2f,%+.3f,%u,%s,%u",
+    fprintf(f, ",%.2f,%+.3f,%u",
             total_voltage_v,
             current_a,
-            remaining_mah,
-            prod_date ? prod_date : "",
-            ntc_count);
+            remaining_mah
+            );
 
     /* 固定 4 个 NTC 列, 缺位留空 */
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 3; i++) {
         if (i < ntc_count && ntc_temp_c)
             fprintf(f, ",%.1f", ntc_temp_c[i]);
         else
             fputc(',', f);
     }
 
-    fprintf(f, ",0x%04X,%s\n",
+    fprintf(f, ",0x%04X,%.2f\n",
             protection_bits,
-            triggered_prots ? triggered_prots : "");
+            cap_pct);
     fflush(f);
 }
 

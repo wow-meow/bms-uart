@@ -2,7 +2,7 @@
 
 #include "bms.h"
 #include "csvlog.h"
-#include "prot_fmt.h"
+//#include "prot_fmt.h"
 #include "serial.h"
 
 #include <stdio.h>
@@ -69,18 +69,17 @@ static void do_cmd_03(int fd, FILE *fcsv, uint64_t *n_records) {
 
     /* 抽取触发保护名 (空=无) */
     char names[256];
-    format_protection_names(names, sizeof names, b.protection_bits);
+    format_protection_names(names,sizeof names, b.protection_bits);
 
     /* 写监控 CSV (摘要) */
     csvlog_append_monitor_basic(fcsv,
         b.total_voltage_v,
         b.current_a,
         b.remaining_capacity_mah,
-        b.prod_date,
+        b.nominal_capacity_mah,
         b.ntc_count,
         b.ntc_temp_c,
         b.protection_bits,
-        names,
         now);
 
     /* 终端打印: 一行紧凑 */

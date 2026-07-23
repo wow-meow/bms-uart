@@ -26,11 +26,10 @@ void csvlog_append_monitor_basic(FILE *f,
     double total_voltage_v,
     double current_a,
     uint32_t remaining_mah,
-    const char *prod_date,
+    uint32_t nominal_capacity_mah,
     uint8_t ntc_count,
     const double *ntc_temp_c,         /* 至少 4 个, 多的写空 */
     uint16_t protection_bits,
-    const char *triggered_prots,     /* 来自 prot_fmt::format_protection_names */
     time_t ts);
 
 void csvlog_append_monitor_cells(FILE *f,
