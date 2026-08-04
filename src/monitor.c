@@ -2,7 +2,7 @@
 
 #include "bms.h"
 #include "csvlog.h"
-//#include "prot_fmt.h"
+#include "prot_fmt.h"
 #include "serial.h"
 
 #include <stdio.h>
