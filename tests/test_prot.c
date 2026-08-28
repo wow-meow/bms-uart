@@ -1,24 +1,40 @@
-/* 保护状态格式化自测, 不依赖 BMS 硬件.
+/*
+ * test_prot.c — 保护状态位图格式化单元测试 / Protection Status Formatter Unit Test
  *
- * 调用 format_protection_status (buffer 版), 直接 strcmp 期望输出.
- * 比 stdout 重定向简单可靠.
+ * 独立验证 prot_fmt.c 的保护状态位图解析与名称格式化, 不依赖实体 BMS 硬件.
+ * Independently validates protection status bitmap formatting in prot_fmt.c without BMS hardware.
+ *
+ * 测试覆盖点 / Test Coverage:
+ *   - 全 0 (无任何保护触发) / All zero (no fault)
+ *   - 13 个独立 bit (单体过压/欠压、整组过压/欠压、温控、过流、短路、AFE、MOS锁等) / All 13 single bits
+ *   - 多 bit 组合置位 (如 0x018A, 0x0403, 0x1103) / Multi-bit combinations
+ *   - 13 位全置位 (0x1FFF) / All 13 bits active (0x1FFF)
+ *   - 高位保留位 (0xE000, 0xE001) / Reserved bits (0xE000, 0xE001)
  */
+
 #include "prot_fmt.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
-/* 行缓冲, 测试失败时差异能立刻打到屏幕 */
+/*
+ * @brief 构造函数: 初始化标准输出为行缓冲, 测试失败时日志立即可见
+ *        Constructor: initialize stdout/stderr to line-buffering mode
+ */
 static void __attribute__((constructor)) setup_buffers(void) {
     setvbuf(stdout, NULL, _IOLBF, 0);
     setvbuf(stderr, NULL, _IOLBF, 0);
 }
 
+/*
+ * @brief 单条断言辅助函数: 验证 format_protection_status(bits) 结果与 expect 逐字节一致
+ *        Assertion helper: verifies format_protection_status output matches expected string exactly
+ */
 static void check(const char *test_name, uint16_t bits, const char *expect) {
     char got[256];
     format_protection_status(got, sizeof got, bits);
-    printf("[%-25s] bits=0x%04X\n  期望: \"%s\"\n  实际: \"%s\"\n",
+    printf("[%-25s] bits=0x%04X\n  期望 (Expected): \"%s\"\n  实际 (Actual)  : \"%s\"\n",
            test_name, bits, expect, got);
     if (strcmp(got, expect) != 0) {
         printf("  ❌\n");
@@ -29,12 +45,12 @@ static void check(const char *test_name, uint16_t bits, const char *expect) {
 }
 
 int main(void) {
-    printf("===== 保护状态格式化自测 =====\n");
+    printf("===== 保护状态格式化自测 / Protection Status Formatting Test =====\n");
 
-    /* 全 0 -> 只有 hex */
+    /* 1. 全 0 -> 仅显示十六进制 / All zeros -> Hex only */
     check("全 0",                0x0000, "保护 0x0000\n");
 
-    /* 单 bit (13 个) */
+    /* 2. 单 bit 独立测试 (13 个有效保护位) / 13 Individual protection bits */
     check("单体过压 (bit0)",     0x0001, "保护 0x0001: 单体过压\n");
     check("单体欠压 (bit1)",     0x0002, "保护 0x0002: 单体欠压\n");
     check("整组过压 (bit2)",     0x0004, "保护 0x0004: 整组过压\n");
@@ -49,7 +65,7 @@ int main(void) {
     check("前端IC错误 (bit11)",  0x0800, "保护 0x0800: 前端IC错误\n");
     check("软件锁MOS (bit12)",   0x1000, "保护 0x1000: 软件锁MOS\n");
 
-    /* 多 bit */
+    /* 3. 多 bit 组合测试 / Multi-bit combinations */
     /* 0x018A = 0x0002 (bit1 单体欠压) + 0x0008 (bit3 整组欠压)
      *        + 0x0080 (bit7 放电低温) + 0x0100 (bit8 充电过流)
      */
@@ -61,14 +77,14 @@ int main(void) {
     check("多个分散",            0x1103,
           "保护 0x1103: 单体过压, 单体欠压, 充电过流, 软件锁MOS\n");
 
-    /* 全部 13 位 */
+    /* 4. 全部 13 位同时置位 / All 13 bits set */
     check("13 位全置位",         0x1FFF,
           "保护 0x1FFF: 单体过压, 单体欠压, 整组过压, 整组欠压, 充电过温, 充电低温, 放电过温, 放电低温, 充电过流, 放电过流, 短路, 前端IC错误, 软件锁MOS\n");
 
-    /* 保留位 (bit 13/14/15) 在协议 V4 里没定义, 当前实现不显示名字 */
+    /* 5. 保留位 (bit 13/14/15) 测试 / Reserved bits (bits 13..15) */
     check("只保留位 0xE000",     0xE000, "保护 0xE000\n");
     check("保留位混已知",        0xE001, "保护 0xE001: 单体过压\n");
 
-    printf("\n===== 全部通过 =====\n");
+    printf("\n===== 全部通过 / All Passed =====\n");
     return 0;
 }
