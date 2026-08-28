@@ -14,6 +14,7 @@ docs/*
 bms_query
 
 # Editor / tooling artifacts
-.clangd
 compile_commands.json
+.clangd
 .cache/
+
