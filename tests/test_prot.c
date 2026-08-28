@@ -3,7 +3,8 @@
  * 调用 format_protection_status (buffer 版), 直接 strcmp 期望输出.
  * 比 stdout 重定向简单可靠.
  */
-#include "../inc/prot_fmt.h"
+#include "prot_fmt.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>

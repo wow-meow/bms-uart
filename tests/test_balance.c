@@ -2,7 +2,7 @@
  *
  * 把几个典型的位图数据 -> 期望字符串写成断言, 跑一遍就知道算法对不对.
  */
-#include "../inc/balance_fmt.h"
+#include "balance_fmt.h"
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>

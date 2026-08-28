@@ -1,50 +1,55 @@
 CC      ?= gcc
-CFLAGS  ?= -O2 -Wall -Wextra -std=c11 -D_POSIX_C_SOURCE=200809L -D_DEFAULT_SOURCE -Iinc
+CFLAGS  ?= -O2 -Wall -Wextra -std=c11 -D_POSIX_C_SOURCE=200809L -D_DEFAULT_SOURCE -Iinclude
 LDFLAGS ?=
+PORT    ?= /dev/bms
+
+BUILDDIR := build
+BINDIR   := install/bin
 
 SRC = $(wildcard src/*.c)
-OBJ = $(SRC:src/%.c=bin/%.o)
-HDR = $(wildcard inc/*.h)
+OBJ = $(SRC:src/%.c=$(BUILDDIR)/%.o)
+HDR = $(wildcard include/*.h)
 
-TARGET = bms_query
+TARGET = $(BINDIR)/bms_query
 
-# 主产物: 工程根的 bms_query
-$(TARGET): $(OBJ) | bin
+.PHONY: all clean distclean run test
+
+all: $(TARGET)
+
+# Final binary -> install/bin/
+$(TARGET): $(OBJ) | $(BINDIR)
 	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LDFLAGS)
 
-# .o 输出到 bin/
-bin/%.o: src/%.c $(HDR) | bin
+# Objects -> build/
+$(BUILDDIR)/%.o: src/%.c $(HDR) | $(BUILDDIR)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-bin:
-	mkdir -p bin
+$(BUILDDIR) $(BINDIR):
+	mkdir -p $@
 
+# Remove build artifacts only; logs/ is kept (see distclean).
 clean:
-	rm -f $(OBJ) $(TARGET)
-	# 注意: logs/ 内的历史数据不会被清理, 手动删除请用 make distclean
+	rm -rf $(BUILDDIR) $(TARGET)
+	@echo "logs/ kept; run 'make distclean' to remove runtime data too"
 
 distclean: clean
-	rm -rf logs
+	rm -rf logs install
+	@echo "removed logs/ and install/"
 
 run: $(TARGET)
 	./$(TARGET) $(PORT)
 
-# ============== 测试 ==============
-TESTSRC = tests/test_proto.c
-bin/test_proto: $(TESTSRC) bin/protocol.o | bin
-	$(CC) $(CFLAGS) -o $@ $(TESTSRC) bin/protocol.o $(LDFLAGS)
+# ---- tests (binaries under build/) ----
+$(BUILDDIR)/test_proto: tests/test_proto.c $(BUILDDIR)/protocol.o | $(BUILDDIR)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-TESTSRC_B = tests/test_balance.c
-bin/test_balance: $(TESTSRC_B) bin/balance_fmt.o | bin
-	$(CC) $(CFLAGS) -o $@ $(TESTSRC_B) bin/balance_fmt.o $(LDFLAGS)
+$(BUILDDIR)/test_balance: tests/test_balance.c $(BUILDDIR)/balance_fmt.o | $(BUILDDIR)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-TESTSRC_P = tests/test_prot.c
-bin/test_prot: $(TESTSRC_P) bin/prot_fmt.o | bin
-	$(CC) $(CFLAGS) -o $@ $(TESTSRC_P) bin/prot_fmt.o $(LDFLAGS)
+$(BUILDDIR)/test_prot: tests/test_prot.c $(BUILDDIR)/prot_fmt.o | $(BUILDDIR)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-test: bin/test_proto bin/test_balance bin/test_prot
-	./bin/test_proto
-	./bin/test_balance
-	./bin/test_prot
-
-.PHONY: clean distclean run test
+test: $(BUILDDIR)/test_proto $(BUILDDIR)/test_balance $(BUILDDIR)/test_prot
+	./$(BUILDDIR)/test_proto
+	./$(BUILDDIR)/test_balance
+	./$(BUILDDIR)/test_prot

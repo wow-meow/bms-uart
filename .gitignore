@@ -1,10 +1,19 @@
-# 构建产物
-bms_query
+# Build outputs (objects in build/; binary in install/bin/)
+build/
+install/
 bin/
 
-# 运行时数据 (CSV 日志)
+# Runtime CSV logs written by the tool
 logs/
 
-# doc 只保留协议 PDF
-doc/*
-!doc/485UART通用协议 V4.pdf
+# Keep only the protocol PDF under docs/; ignore everything else there
+docs/*
+!docs/485UART通用协议V4.pdf
+
+# Stale root binary from old in-tree build layout
+bms_query
+
+# Editor / tooling artifacts
+.clangd
+compile_commands.json
+.cache/

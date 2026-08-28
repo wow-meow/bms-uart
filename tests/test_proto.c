@@ -13,7 +13,7 @@
  *   sum  = bytes [2..30] = STATUS(0x00) + LEN(0x1B) + DATA
  *   cs   = ~sum + 1 = 0xFBFF
  */
-#include "../inc/protocol.h"
+#include "protocol.h"
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
