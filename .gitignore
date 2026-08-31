@@ -8,6 +8,8 @@ logs/
 
 # Keep only the protocol PDF under docs/; ignore everything else there
 docs/*
+!docs/ARCHITECTURE.md
+!docs/ARCHITECTURE-CN.md
 !docs/485UART通用协议V4.pdf
 
 # Stale root binary from old in-tree build layout
