@@ -18,3 +18,8 @@ compile_commands.json
 .clangd
 .cache/
 
+# npm
+package.json
+pnpm-lock.yaml
+node_modules/
+
