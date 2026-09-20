@@ -17,7 +17,7 @@
 #include "bms.h"
 #include "csvlog.h"
 #include "prot_fmt.h"
-#include "serial.h"
+// #include "serial.h"
 
 #include <stdio.h>
 #include <stdlib.h>

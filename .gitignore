@@ -12,6 +12,9 @@ docs/*
 !docs/ARCHITECTURE-CN.md
 !docs/485UART通用协议V4.pdf
 
+# Visual check temporary files created by archify
+*.visual-check.*
+
 # Stale root binary from old in-tree build layout
 bms_query
 
@@ -24,4 +27,3 @@ compile_commands.json
 package.json
 pnpm-lock.yaml
 node_modules/
-
