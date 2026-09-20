@@ -1,4 +1,4 @@
-# BMS 上位机查询工具 (Jiabaida Protocol V4)
+# BMS Query Tool (Jiabaida Protocol V4) | BMS 上位机查询工具 (Jiabaida Protocol V4)
 
 **版本: v1.0.0** · 2026-07-16
 
@@ -10,13 +10,13 @@ BMS (Battery Management System) 上位机工具，通过 USB 转 RS485 适配器
 
 所有查询支持 BMS 进深睡后的**自动重试（4 次）**。
 
-## 硬件
+## Hardware | 硬件
 
 - **嘉佰达软件板**（RS485 接口，波特率 9600-8-N-1）
 - **USB 转 RS485 适配器**（CH340 / FT232 等多数免设置；少数需手动 RTS 切换）
 - 接线：A+ / A- 对 A+ / A-, B+ / B- 对 B+ / B-，注意 485 半双工收发方向
 
-## 编译
+## Build | 编译
 
 ```bash
 make           # 编译，产物在工程根 bms_query
@@ -26,7 +26,7 @@ make distclean # 连 logs/ 一起清
 make run PORT=/dev/ttyUSB0
 ```
 
-**依赖**：
+### Dependencies | 依赖
 
 - Linux（kernel ≥ 3.7 提供 `TIOCSRS485` 等 ioctl）
 - GCC 4.8+（支持 c11）
@@ -34,9 +34,9 @@ make run PORT=/dev/ttyUSB0
 - 内核头文件：`sudo apt install linux-headers-$(uname -r)`（多数发行版默认就有）
 - 无第三方库（只用 libc + POSIX）
 
-## 用法
+## Usage | 用法
 
-### 1. 手动菜单模式
+### 1. Manual Menu Mode | 1. 手动菜单模式
 
 ```bash
 ./bms_query /dev/ttyUSB0
@@ -55,7 +55,7 @@ make run PORT=/dev/ttyUSB0
 >>
 ```
 
-### 2. 菜单 [4] - 交互式监控模式
+### 2. Menu [4] - Interactive Monitor Mode | 2. 菜单 [4] - 交互式监控模式
 
 按 `4`，按提示输入：
 
@@ -72,7 +72,7 @@ q
 [poll] 停止. 共记录 N 条
 ```
 
-### 3. CLI 监控模式（脚本友好）
+### 3. CLI Monitor Mode (Script-Friendly) | 3. CLI 监控模式（脚本友好）
 
 ```bash
 ./bms_query --monitor 03,04 --interval 5 /dev/ttyUSB0
@@ -84,7 +84,7 @@ q
 - `--interval <N>`：秒数（1..3600，默认 5）
 - `Ctrl+C` 退出，干净 fclose 所有监控 CSV
 
-### 4. 调试模式（任意入口）
+### 4. Debug Mode (Any Entry Point) | 4. 调试模式（任意入口）
 
 加 `--debug` 会在每次收发时打印原始字节流：
 
@@ -95,7 +95,7 @@ q
 
 日志会带 `[debug] TX: DD A5 03 00 FF FD 77` 之类。
 
-## 自动重试（唤醒 BMS 深睡）
+## Auto Retry (Wake BMS from Deep Sleep) | 自动重试（唤醒 BMS 深睡）
 
 BMS 长时间没活动后会进低功耗，首字节唤醒有延迟。协议层把单帧交互改成 4 次尝试：
 
@@ -107,9 +107,9 @@ BMS 长时间没活动后会进低功耗，首字节唤醒有延迟。协议层�
 
 只对 **TIMEOUT**（根本没收到 SOF）触发重试；**BAD_FRAME / BAD_CHECKSUM / ERR_STATUS** 立即返回（BMS 回了，错了就是错了）。
 
-## 输出示例
+## Output Examples | 输出示例
 
-### 菜单 1 输出（手动）
+### Menu 1 Output (Manual) | 菜单 1 输出（手动）
 
 ```
 [14:32:01] 总电压 66.23V | 电流 -20.12A | 剩余 34930mAh / 40000mAh (87%)
@@ -121,7 +121,7 @@ BMS 长时间没活动后会进低功耗，首字节唤醒有延迟。协议层�
 
 保护状态以逗号分隔中文名称输出，未触发时仅显示 `保护 0x0000`。
 
-### 监控模式输出
+### Monitor Mode Output | 监控模式输出
 
 ```
 [17:30:05] V=48.74V I=+0.05A Ah=9500mAh T=[25.5,25.9,26.0] protection_status=0x0000 (无)
@@ -132,9 +132,9 @@ BMS 长时间没活动后会进低功耗，首字节唤醒有延迟。协议层�
 
 每行一条命令，触发保护时在括号内列出具体保护原因。
 
-## CSV 输出
+## CSV Output | CSV 输出
 
-### 手动模式 - `logs/` 目录
+### Manual Mode - `logs/` Directory | 手动模式 - `logs/` 目录
 
 文件名全英文无缩写，**每次查询追加一行**：
 
@@ -146,7 +146,7 @@ battery_hardware_version.csv                  <- 菜单 3 (2 列)
 
 `balance_*` / `protection_bits` 列保留原始 16-bit hex，方便 pandas/Excel 后处理。
 
-### 监控模式 - `logs/monitoring/` 子目录
+### Monitor Mode - `logs/monitoring/` Subdirectory | 监控模式 - `logs/monitoring/` 子目录
 
 **每次启动监控 (CLI `--monitor` 或菜单 4) 创建一份独立 CSV**，文件名带启动时间秒：
 
@@ -175,7 +175,7 @@ timestamp,cell_count,cell_min_mv,cell_max_mv,cell_spread_mv,cell_avg_mv
 ```
 
 
-## 项目结构
+## Project Structure | 项目结构
 
 ```
 bms_info/
@@ -201,7 +201,7 @@ bms_info/
 └── tests/                          # 离线自测
 ```
 
-## 协议要点（V4）
+## Protocol Key Points (V4) | 协议要点（V4）
 
 帧格式：
 
@@ -228,12 +228,12 @@ bms_info/
 完整字段定义见 [`doc/485UART通用协议 V4.pdf`](doc/485UART通用协议%20V4.pdf)。
 
 
-## 更新日志 (Changelog)
+## Changelog | 更新日志
 
 | 版本 | 日期 | 类型 | 内容 |
 | --- | --- | --- | --- |
 | V1.0.0 | 2026-07-16 | feat | 1. 实现三条读命令（0x03 / 0x04 / 0x05）<br>2. 通过 9600-8-N-1 串口与 RS485 自动收发方向建立通信（内核 `TIOCSRS485` + 手动 `TIOCMBIS` 兜底）<br>3. 协议层重试机制：唤醒重试 4 次（单次超时 1 秒 + 重试间隔 200ms）<br>4. 均衡状态格式化输出（连续串号折合区间表示，如 `1-3, 5, 7-9`）<br>5. 保护状态以逗号分隔中文名称输出（未触发时为空格，触发时列出具体保护原因）<br>6. 双日志路径：手动查询 `logs/` + 监控日志 `logs/monitoring/`，存储路径分离<br>7. 三入口模式：手动菜单 1/2/3、菜单 4 交互式监控、`--monitor` CLI 参数<br>8. 离线自测：协议层 5/5（PDF 例帧验证）、均衡格式化 14 项、保护格式化 21 项 |
 
-## License
+## License | 许可证
 
 This project is licensed under the [MIT License](LICENSE).
